@@ -22,6 +22,8 @@ mv <path-to-envfile> .
 docker-compose up --build -d
 ```
 
+The dashboard is available at port 3000.
+
 ## Features
 
 - Detection of failed SSH login attempts
