@@ -17,9 +17,17 @@ def parse_log():
     failed = [ele for ele in content if "Failed password" in ele]
 
     for ele in failed:
+        element = dict()
+
+        element["time"] = ele.split(' ')[0]
         if "invalid" in ele:
-            info.append((ele.split(' ')[0], ele.split(' ')[8], ele.split(' ')[10], ele.split(' ')[12]))
+            element["name"] = ele.split(' ')[8]
+            element["ip"] = ele.split(' ')[10]
+            element["port"] = ele.split(' ')[12]
         else:
-            info.append((ele.split(' ')[0], ele.split(' ')[6], ele.split(' ')[8], ele.split(' ')[10]))
+            element["name"] = ele.split(' ')[6]
+            element["ip"] = ele.split(' ')[8]
+            element["port"] = ele.split(' ')[10]
+        info.append(element)
     return info
 
