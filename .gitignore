@@ -1,2 +1,4 @@
 backend/venv/
 auth.log
+backend/__pycache__/
+.env
