@@ -29,7 +29,6 @@ The dashboard is available at port 3000.
 - Detection of failed SSH login attempts
 - Aggregated statistics by IP address and username
 - Time series of failed logins
-- Geolocation of IPs for world map visualization
 - Prebuilt Grafana dashboards
 
 ## Security Notes
