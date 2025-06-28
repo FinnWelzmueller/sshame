@@ -9,12 +9,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy dependencies and install
-COPY backend/requirements.txt .
+COPY requirements.txt .
 
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the rest of the backend code
-COPY backend/ .
+COPY . .
 
 # Set environment variables (if needed in container)
 ENV PYTHONUNBUFFERED=1
