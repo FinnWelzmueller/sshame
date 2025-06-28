@@ -1,7 +1,11 @@
 from influxdb_client import InfluxDBClient, Point, WritePrecision
 from dateutil import parser as date_parser
 import os
+from dotenv import load_dotenv
+from pathlib import Path
 
+env_path = Path(__file__).resolve().parent.parent / ".env"
+load_dotenv(dotenv_path=env_path)
 # Configuration via environment variables or fallback defaults
 INFLUXDB_URL = os.getenv("INFLUXDB_URL", "http://localhost:8086")
 INFLUXDB_TOKEN = os.getenv("INFLUXDB_TOKEN", "your-token")
@@ -15,7 +19,7 @@ client = InfluxDBClient(
     org=INFLUXDB_ORG,
 )
 
-write_api = client.write_api(write_options=None)
+write_api = client.write_api()
 
 def write_ssh_event(ip, user, timestamp_str, port=None):
     """
@@ -46,6 +50,10 @@ def write_ssh_event(ip, user, timestamp_str, port=None):
 
         # Write to InfluxDB
         write_api.write(bucket=INFLUXDB_BUCKET, org=INFLUXDB_ORG, record=point)
+        print(f"Wrote to influxDB: ip: {ip}, user: {user}, timestamp: {timestamp_str}, port: {port}.")
 
     except Exception as e:
         print(f"Failed to write event to InfluxDB: {e}")
+
+#def write_ssh_event(ip, user, timestamp_str, port=None):
+#    print(f"Writing to influx... ip: {ip}, user: {user}, timestamp: {timestamp_str}, port: {port}.")
