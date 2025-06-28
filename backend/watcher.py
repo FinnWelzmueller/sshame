@@ -5,10 +5,10 @@ from datetime import datetime
 from parse import parse_log_lines  # ← deine Parserfunktion für Zeilen
 from influx import write_ssh_event  # ← deine Influx-Funktion
 
-LOG_PATH = "./auth.log"            
-ROTATED_PATH = "./auth.log.1"      
-STATE_FILE = "state.json"                 
-INTERVAL = 30                             
+LOG_PATH = "/hostlog/auth.log"            
+ROTATED_PATH = "/hostlog/auth.log.1"      
+STATE_FILE = "/state/state.json"                 
+INTERVAL = 3                             
 
 def load_state():
     if not os.path.exists(STATE_FILE):
@@ -38,7 +38,9 @@ def read_new_lines(log_path, offset):
         return [], offset
 
 def process_lines(lines):
+    print(f"[watcher] Processing {len(lines)} lines...")
     events = parse_log_lines(lines)
+    print(f"[watcher] Parsed {len(events)} events.")
     for event in events:
         # event = (ip, user, timestamp_str, port)
         write_ssh_event(*event)
