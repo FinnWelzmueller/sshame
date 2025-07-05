@@ -1,0 +1,47 @@
+{
+  "id": null,
+  "title": "sshame Dashboard",
+  "tags": ["ssh", "security", "sshame"],
+  "timezone": "browser",
+  "schemaVersion": 36,
+  "version": 0,
+  "refresh": "5s",
+  "panels": [
+    {
+      "type": "stat",
+      "title": "Total Failed SSH Logins",
+      "gridPos": { "x": 0, "y": 0, "w": 6, "h": 4 },
+      "targets": [
+        {
+          "query": "from(bucket: \"sshame\") |> range(start: -7d) |> filter(fn: (r) => r._measurement == \"ssh_failed_login_attempts\") |> sum()",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "SSH Failed Logins Over Time",
+      "gridPos": { "x": 6, "y": 0, "w": 18, "h": 8 },
+      "targets": [
+        {
+          "query": "from(bucket: \"sshame\") |> range(start: -7d) |> filter(fn: (r) => r._measurement == \"ssh_failed_login_attempts\") |> aggregateWindow(every: 1h, fn: sum, createEmpty: false)",
+          "refId": "B"
+        }
+      ]
+    },
+    {
+      "type": "table",
+      "title": "Top IP Addresses",
+      "gridPos": { "x": 0, "y": 8, "w": 24, "h": 8 },
+      "targets": [
+        {
+          "query": "from(bucket: \"sshame\") |> range(start: -7d) |> filter(fn: (r) => r._measurement == \"ssh_failed_by_ip\") |> group(columns: [\"ip\"]) |> sum() |> sort(columns: [\"_value\"], desc: true)",
+          "refId": "C"
+        }
+      ],
+      "options": {
+        "showHeader": true
+      }
+    }
+  ]
+}

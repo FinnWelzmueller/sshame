@@ -22,10 +22,7 @@
   "links": [],
   "panels": [
     {
-      "datasource": {
-        "type": "influxdb",
-        "uid": "eer12bumokpvke"
-      },
+      "datasource": "sshame-influxdb",
       "description": "This visualization shows the total amount of failed SSH attempts per timeframe",
       "fieldConfig": {
         "defaults": {
@@ -103,10 +100,7 @@
       "pluginVersion": "11.6.0",
       "targets": [
         {
-          "datasource": {
-            "type": "influxdb",
-            "uid": "eer12bumokpvke"
-          },
+          "datasource": "sshame-influxdb",
           "query": "from(bucket: \"sshame\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"ssh_fail\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"event\")\r\n  |> group(columns: [])\r\n  |> aggregateWindow(every: v.windowPeriod, fn: count, createEmpty: false)\r\n  |> yield(name: \"failed_attempts\")\r\n",
           "refId": "A"
         }
@@ -116,10 +110,7 @@
       "type": "timeseries"
     },
     {
-      "datasource": {
-        "type": "influxdb",
-        "uid": "eer12bumokpvke"
-      },
+      "datasource": "sshame-influxdb",
       "description": "This chart shows the distribution of the used IPs from failed SSH attempts in the selected timeframe",
       "fieldConfig": {
         "defaults": {
@@ -171,10 +162,7 @@
       "pluginVersion": "11.6.0",
       "targets": [
         {
-          "datasource": {
-            "type": "influxdb",
-            "uid": "eer12bumokpvke"
-          },
+          "datasource": "sshame-influxdb",
           "query": "from(bucket: \"sshame\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"ssh_fail\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"event\")\r\n  |> group(columns: [\"ip\"])\r\n  |> count()\r\n  |> sort(columns: [\"_value\"], desc: true)\r\n  |> limit(n: 10)\r\n  |> map(fn: (r) => ({ r with \" \": r._value }))\r\n  |> keep(columns: [\"ip\", \" \"])\r\n",
           "refId": "A"
         }
@@ -184,10 +172,7 @@
       "type": "piechart"
     },
     {
-      "datasource": {
-        "type": "influxdb",
-        "uid": "eer12bumokpvke"
-      },
+     "datasource": "sshame-influxdb",
       "description": "This chart shows the distribution of the used user names from failed SSH attempts in the selected timeframe",
       "fieldConfig": {
         "defaults": {
@@ -239,10 +224,7 @@
       "pluginVersion": "11.6.0",
       "targets": [
         {
-          "datasource": {
-            "type": "influxdb",
-            "uid": "eer12bumokpvke"
-          },
+          "datasource": "sshame-influxdb",
           "query": "from(bucket: \"sshame\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"ssh_fail\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"event\")\r\n  |> group(columns: [\"user\"])\r\n  |> count()\r\n  |> sort(columns: [\"_value\"], desc: true)\r\n  |> limit(n: 10)\r\n  |> map(fn: (r) => ({ r with \" \": r._value }))\r\n  |> keep(columns: [\"user\", \" \"])\r\n",
           "refId": "A"
         }
@@ -252,10 +234,7 @@
       "type": "piechart"
     },
     {
-      "datasource": {
-        "type": "influxdb",
-        "uid": "eer12bumokpvke"
-      },
+      "datasource": "sshame-influxdb",
       "description": "This chart shows the distribution of the used ports from failed SSH attempts in the selected timeframe",
       "fieldConfig": {
         "defaults": {
@@ -307,10 +286,7 @@
       "pluginVersion": "11.6.0",
       "targets": [
         {
-          "datasource": {
-            "type": "influxdb",
-            "uid": "eer12bumokpvke"
-          },
+          "datasource": "sshame-influxdb",
           "query": "from(bucket: \"sshame\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"ssh_fail\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"event\")\r\n  |> group(columns: [\"port\"])\r\n  |> count()\r\n  |> sort(columns: [\"_value\"], desc: true)\r\n  |> limit(n: 10)\r\n  |> map(fn: (r) => ({ r with \" \": r._value }))\r\n  |> keep(columns: [\"port\", \" \"])\r\n",
           "refId": "A"
         }
