@@ -3,6 +3,7 @@ This module contains functions to parse the auth.log file
 and extract relevant information about failed SSH login attempts.
 The location of the log file is specified by the `pathToLog` variable.
 """
+from geoloc import get_geo_info
 
 def parse_log(line):
     """
@@ -19,8 +20,19 @@ def parse_log(line):
         user = line.split(' ')[6]
         ip = line.split(' ')[8]
         port = line.split(' ')[10]
-    print(f"ip: {ip}, user: {user}, time: {timestamp_str}, port: {port}")
-    return ip, user, timestamp_str, port
+
+    geo = get_geo_info(ip)
+    print(geo)
+    try:
+        country_long = geo.get("country_long")
+        lat = geo.get("lat")
+        lon = geo.get("lon")
+    except KeyError:
+        country_long = "Unknown"
+        lat = "Unknown"
+        lon = "Unknown"
+    print(f"ip: {ip}, user: {user}, time: {timestamp_str}, port: {port}, country: {country_long}, lat: {lat}, lon: {lon}")
+    return ip, user, timestamp_str, port, country_long, lat, lon
 
 def parse_log_lines(lines):
     """
@@ -31,6 +43,7 @@ def parse_log_lines(lines):
     results = []
     for line in lines:
         if "Failed password" in line:
-            ip, user, timestamp_str, port = parse_log(line)
-            results.append((ip, user, timestamp_str, port))
+            ip, user, timestamp_str, port, country_long, lat, lon = parse_log(line)
+            results.append((ip, user, timestamp_str, port, country_long, lat, lon))
     return results
+
