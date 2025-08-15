@@ -3,4 +3,4 @@ data/
 auth.log*
 backend/__pycache__/
 .env
-backend/geoloc_database/geoloc.csv
+*.csv
