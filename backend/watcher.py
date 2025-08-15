@@ -2,13 +2,16 @@ import os
 import time
 import json
 from datetime import datetime
-from parse import parse_log_lines  # ← deine Parserfunktion für Zeilen
-from influx import write_ssh_event  # ← deine Influx-Funktion
+from parse import parse_log_lines 
+from influx import write_ssh_event 
+
+
 
 LOG_PATH = "/hostlog/auth.log"            
 ROTATED_PATH = "/hostlog/auth.log.1"      
 STATE_FILE = "/state/state.json"                 
 INTERVAL = 3                             
+
 
 def load_state():
     if not os.path.exists(STATE_FILE):
