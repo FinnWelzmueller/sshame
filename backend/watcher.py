@@ -41,15 +41,15 @@ def read_new_lines(log_path, offset):
         return [], offset
 
 def process_lines(lines):
-    print(f"[watcher] Processing {len(lines)} lines...")
+    print(f"[DEBUG] Processing {len(lines)} lines...")
     events = parse_log_lines(lines)
-    print(f"[watcher] Parsed {len(events)} events.")
+    print(f"[DEBUG] Parsed {len(events)} events.")
     for event in events:
         # event = (ip, user, timestamp_str, port)
         write_ssh_event(*event)
 
 def run_watcher():
-    print("Starting sshame watcher...")
+    print("[DEBUG] Starting sshame watcher...")
     state = load_state()
 
     while True:
@@ -63,7 +63,7 @@ def run_watcher():
 
         # Fall 2: Log wurde rotiert → lese log.1 vollständig + log neu ab 0
         else:
-            print("Log rotation detected – scanning auth.log.1")
+            print("[DEBUG] Log rotation detected – scanning auth.log.1")
             old_lines, _ = read_new_lines(ROTATED_PATH, 0)
             process_lines(old_lines)
             new_lines, new_offset = read_new_lines(LOG_PATH, 0)

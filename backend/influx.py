@@ -1,16 +1,27 @@
 from influxdb_client import InfluxDBClient, Point, WritePrecision
+from influxdb_client.client.write_api import SYNCHRONOUS
 from dateutil import parser as date_parser
 import os
 from dotenv import load_dotenv
-from pathlib import Path
 
 
-env_path = Path(__file__).resolve().parent.parent / ".env"
+env_path = os.path.join(os.path.dirname(__file__), "..", "..", ".env")
+env_path = os.path.abspath(env_path)
 load_dotenv(dotenv_path=env_path)
-# Configuration via environment variables or fallback defaults
-INFLUXDB_URL = os.getenv("INFLUXDB_URL", None)
-INFLUXDB_TOKEN = os.getenv("INFLUXDB_TOKEN", None)
 
+
+# Configuration via env-file
+INFLUXDB_URL = os.getenv("INFLUXDB_URL", "http://localhost:8086")
+INFLUXDB_TOKEN = os.getenv("INFLUXDB_ADMIN_TOKEN", None)
+
+if not INFLUXDB_URL:
+    print("[WARNING] INFLUXDB_URL not set. Defaulting to http://localhost:8086")
+else:
+    print(f"[DEBUG] Using InfluxDB URL: {INFLUXDB_URL}")
+if not INFLUXDB_TOKEN:
+    print("[WARNING] INFLUXDB_ADMIN_TOKEN not set. No data will be written to InfluxDB.")
+else:
+    print("[DEBUG] Found InfluxDB token.")
 # Initialize the InfluxDB client
 client = InfluxDBClient(
     url=INFLUXDB_URL,
@@ -18,7 +29,7 @@ client = InfluxDBClient(
     org="sshame",
 )
 
-write_api = client.write_api()
+write_api = client.write_api(write_options=SYNCHRONOUS)
 
 def write_ssh_event(ip, user, timestamp_str, port=None, country_long=None, lat=None, lon=None):
     """
@@ -49,16 +60,16 @@ def write_ssh_event(ip, user, timestamp_str, port=None, country_long=None, lat=N
         if country_long:
             point.tag("country", country_long)
         if lat is not None:
-            point.field("lat", float(lat))
+            point.field("latitude", float(lat))
         if lon is not None:
-            point.field("lon", float(lon))
+            point.field("longitude", float(lon))
 
         # Write to InfluxDB
         write_api.write(bucket="sshame", org="sshame", record=point)
-        print(f"Wrote to influxDB: ip: {ip}, user: {user}, timestamp: {timestamp_str}, port: {port}, country: {country_long}, lat: {lat}, lon: {lon}.")
+        print(f"[DEBUG] Wrote to influxDB: ip: {ip}, user: {user}, timestamp: {timestamp_str}, port: {port}, country: {country_long}, lat: {lat}, lon: {lon}.")
 
     except Exception as e:
-        print(f"Failed to write event to InfluxDB: {e}")
+        print(f"[ERROR] Failed to write event to InfluxDB: {e}")
 
 #def write_ssh_event(ip, user, timestamp_str, port=None):
 #    print(f"Writing to influx... ip: {ip}, user: {user}, timestamp: {timestamp_str}, port: {port}.")

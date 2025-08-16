@@ -44,10 +44,10 @@ def get_geo_info(ip_str, retries=10, delay=10):
                 return DEFAULT_GEO.copy()
 
         except mysql.connector.Error as e:
-            print(f"[MySQL] Attempt {attempt + 1} failed: {e}")
+            print(f"[WARNING] Attempt {attempt + 1} failed: {e}")
             time.sleep(delay)
 
-    print("[MySQL] All connection attempts failed.")
+    print("[ERROR] All connection attempts failed.")
     return DEFAULT_GEO.copy()
 
 

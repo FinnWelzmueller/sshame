@@ -22,7 +22,6 @@ def parse_log(line):
         port = line.split(' ')[10]
 
     geo = get_geo_info(ip)
-    print(geo)
     try:
         country_long = geo.get("country_long")
         lat = geo.get("lat")
@@ -31,7 +30,7 @@ def parse_log(line):
         country_long = "Unknown"
         lat = "Unknown"
         lon = "Unknown"
-    print(f"ip: {ip}, user: {user}, time: {timestamp_str}, port: {port}, country: {country_long}, lat: {lat}, lon: {lon}")
+    print(f"[DEBUG] ip: {ip}, user: {user}, time: {timestamp_str}, port: {port}, country: {country_long}, lat: {lat}, lon: {lon}")
     return ip, user, timestamp_str, port, country_long, lat, lon
 
 def parse_log_lines(lines):
