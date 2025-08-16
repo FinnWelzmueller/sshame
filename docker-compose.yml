@@ -14,6 +14,7 @@ services:
       - DOCKER_INFLUXDB_INIT_PASSWORD=${INFLUXDB_ADMIN_PASSWORD}
       - DOCKER_INFLUXDB_INIT_ORG=sshame
       - DOCKER_INFLUXDB_INIT_BUCKET=sshame
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=${INFLUXDB_ADMIN_TOKEN}
 
   grafana:
     build: ./frontend/grafana
