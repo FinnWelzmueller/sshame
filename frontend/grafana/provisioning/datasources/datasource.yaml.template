@@ -14,4 +14,4 @@ datasources:
       defaultBucket: sshame
       tlsSkipVerify: true
     secureJsonData:
-      token: __INFLUXDB_GRAFANA_TOKEN__
+      token: __INFLUXDB_ADMIN_TOKEN__

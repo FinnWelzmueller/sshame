@@ -13,3 +13,5 @@ datasources:
       organization: sshame
       defaultBucket: sshame
       tlsSkipVerify: true
+    secureJsonData:
+      token: ${INFLUXDB_ADMIN_TOKEN}
