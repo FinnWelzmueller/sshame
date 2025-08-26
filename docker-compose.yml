@@ -1,21 +1,4 @@
 services:
-  influxdb:
-    image: influxdb:2.7
-    env_file: .env
-    container_name: sshame-influxdb
-    ports:
-      - "8086:8086"
-    volumes:
-      - ./data/influxdb:/var/lib/influxdb2
-      - ./init-influx.sh:/docker-entrypoint-initdb.d/init-influx.sh
-    environment:
-      - DOCKER_INFLUXDB_INIT_MODE=setup
-      - DOCKER_INFLUXDB_INIT_USERNAME=${INFLUXDB_ADMIN_USER}
-      - DOCKER_INFLUXDB_INIT_PASSWORD=${INFLUXDB_ADMIN_PASSWORD}
-      - DOCKER_INFLUXDB_INIT_ORG=sshame
-      - DOCKER_INFLUXDB_INIT_BUCKET=sshame
-      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=${INFLUXDB_ADMIN_TOKEN}
-
   grafana:
     build: ./frontend/grafana
     env_file: .env
@@ -28,6 +11,9 @@ services:
     volumes:
       - ./frontend/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
       - ./frontend/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+    depends_on:
+      mysql:
+        condition: service_healthy
 
   backend:
     build: ./backend
@@ -41,8 +27,7 @@ services:
     depends_on:
       mysql:
         condition: service_healthy
-      influxdb:
-        condition: service_started
+
 
   mysql:
     image: mysql:8.0
@@ -55,14 +40,12 @@ services:
     ports:
       - "3306:3306"
     healthcheck:
-      test: ["CMD-SHELL", "
-        mysqladmin ping -h 127.0.0.1 -u${MYSQL_USER:-root} -p${MYSQL_PASSWORD:-$MYSQL_ROOT_PASSWORD} --silent \
-        && mysql -h 127.0.0.1 -u${MYSQL_USER:-root} -p${MYSQL_PASSWORD:-$MYSQL_ROOT_PASSWORD} -D ${MYSQL_DATABASE} -N -e \"SELECT COUNT(*)>0 FROM ip_locations;\" | grep 1 >/dev/null 2>&1"]
+      test: ["CMD-SHELL", "mysql -h 127.0.0.1 -uroot -p$${MYSQL_ROOT_PASSWORD} -N -e 'USE sshame; SHOW TABLES LIKE \"ip_locations\";' | grep -q ip_locations"]
       interval: 10s
       timeout: 5s
       retries: 30
       start_period: 40s
     volumes:
-      - ./backend/geoloc_database/init:/docker-entrypoint-initdb.d
-      - ./backend/geoloc_database/init:/var/lib/mysql-files
+      - ./backend/mysql/init:/docker-entrypoint-initdb.d
+      - ./backend/mysql/init:/var/lib/mysql-files
     command: --secure-file-priv=/var/lib/mysql-files/ --local-infile=1 --sql-mode=""
