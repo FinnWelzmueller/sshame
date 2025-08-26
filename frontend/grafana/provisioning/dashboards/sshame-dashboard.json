@@ -22,7 +22,10 @@
   "links": [],
   "panels": [
     {
-      "datasource": "sshame-influxdb",
+      "datasource": {
+        "type": "mysql",
+        "uid": "P22A8A7D75DEA592C"
+      },
       "description": "This visualization shows the total amount of failed SSH attempts per timeframe",
       "fieldConfig": {
         "defaults": {
@@ -30,16 +33,16 @@
             "mode": "palette-classic"
           },
           "custom": {
-            "axisBorderShow": true,
+            "axisBorderShow": false,
             "axisCenteredZero": false,
             "axisColorMode": "text",
             "axisLabel": "",
-            "axisPlacement": "left",
+            "axisPlacement": "auto",
             "barAlignment": 0,
             "barWidthFactor": 0.6,
             "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
+            "fillOpacity": 34,
+            "gradientMode": "opacity",
             "hideFrom": {
               "legend": false,
               "tooltip": false,
@@ -47,11 +50,8 @@
             },
             "insertNulls": false,
             "lineInterpolation": "smooth",
-            "lineStyle": {
-              "fill": "solid"
-            },
             "lineWidth": 2,
-            "pointSize": 1,
+            "pointSize": 5,
             "scaleDistribution": {
               "type": "linear"
             },
@@ -90,20 +90,50 @@
           "calcs": [],
           "displayMode": "list",
           "placement": "bottom",
-          "showLegend": false
+          "showLegend": true
         },
         "tooltip": {
           "hideZeros": false,
-          "mode": "none",
+          "mode": "single",
           "sort": "none"
         }
       },
-      "pluginVersion": "12.2.0-16979757807",
+      "pluginVersion": "12.1.1",
       "targets": [
         {
+          "dataset": "sshame",
           "datasource": "sshame-influxdb",
+          "editorMode": "code",
+          "format": "table",
           "query": "from(bucket: \"sshame\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"ssh_fail\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"event\")\r\n  |> group(columns: [])\r\n  |> aggregateWindow(every: v.windowPeriod, fn: count, createEmpty: false)\r\n  |> yield(name: \"failed_attempts\")\r\n",
-          "refId": "A"
+          "rawQuery": true,
+          "rawSql": "SELECT\r\n  $__timeGroup(ts, $__interval) AS time,\r\n  COUNT(*) AS fails\r\nFROM ssh_events\r\nWHERE $__timeFilter(ts)\r\nGROUP BY 1\r\nORDER BY 1;\r\n",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "name": "SUM",
+                "parameters": [
+                  {
+                    "name": "ts",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "name": "SUM(ts)",
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          },
+          "table": "ssh_events"
         }
       ],
       "title": "Failed attempts",
@@ -111,12 +141,14 @@
       "type": "timeseries"
     },
     {
-      "datasource": "sshame-influxdb",
-      "description": "This chart shows the distribution of the used IPs from failed SSH attempts in the selected timeframe",
+      "datasource": {
+        "type": "mysql",
+        "uid": "P22A8A7D75DEA592C"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "palette-classic"
+            "mode": "thresholds"
           },
           "custom": {
             "hideFrom": {
@@ -125,56 +157,107 @@
               "viz": false
             }
           },
-          "mappings": []
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
         },
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
-        "w": 5,
+        "h": 13,
+        "w": 12,
         "x": 0,
         "y": 7
       },
-      "id": 2,
+      "id": 6,
       "options": {
-        "displayLabels": [],
-        "legend": {
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": false,
-          "values": [
-            "percent"
-          ]
+        "basemap": {
+          "config": {},
+          "name": "Layer 0",
+          "type": "default"
         },
-        "pieType": "pie",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "/.*/",
-          "values": true
+        "controls": {
+          "mouseWheelZoom": true,
+          "showAttribution": false,
+          "showDebug": false,
+          "showMeasure": false,
+          "showScale": false,
+          "showZoom": true
         },
-        "sort": "desc",
+        "layers": [
+          {
+            "config": {
+              "blur": 24,
+              "radius": 3,
+              "weight": {
+                "fixed": 1,
+                "max": 1,
+                "min": 0
+              }
+            },
+            "name": "Layer 1",
+            "tooltip": true,
+            "type": "heatmap"
+          }
+        ],
         "tooltip": {
-          "hideZeros": false,
-          "mode": "single",
-          "sort": "none"
+          "mode": "details"
+        },
+        "view": {
+          "allLayers": true,
+          "id": "zero",
+          "lat": 0,
+          "lon": 0,
+          "zoom": 1
         }
       },
-      "pluginVersion": "12.2.0-16979757807",
+      "pluginVersion": "12.1.1",
       "targets": [
         {
-          "datasource": "sshame-influxdb",
-          "query": "from(bucket: \"sshame\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"ssh_fail\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"event\")\r\n  |> group(columns: [\"ip\"])\r\n  |> count()\r\n  |> sort(columns: [\"_value\"], desc: true)\r\n  |> limit(n: 10)\r\n  |> map(fn: (r) => ({ r with \" \": r._value }))\r\n  |> keep(columns: [\"ip\", \" \"])\r\n",
-          "refId": "A"
+          "dataset": "performance_schema",
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT\r\n  ts            AS time,\r\n  lat           AS latitude,\r\n  lon           AS longitude,\r\n  ip,\r\n  username,\r\n  country,\r\n  port,\r\n  1             AS value\r\nFROM ssh_events\r\nWHERE $__timeFilter(ts)\r\n  AND lat IS NOT NULL AND lon IS NOT NULL;\r\n",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
         }
       ],
-      "title": "IP distribution",
-      "transparent": true,
-      "type": "piechart"
+      "title": "",
+      "type": "geomap"
     },
     {
-      "datasource": "sshame-influxdb",
+      "datasource": {
+        "type": "mysql",
+        "uid": "P22A8A7D75DEA592C"
+      },
       "description": "This chart shows the distribution of the used user names from failed SSH attempts in the selected timeframe",
       "fieldConfig": {
         "defaults": {
@@ -193,9 +276,9 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
-        "w": 5,
-        "x": 5,
+        "h": 6,
+        "w": 6,
+        "x": 12,
         "y": 7
       },
       "id": 3,
@@ -215,6 +298,7 @@
             "lastNotNull"
           ],
           "fields": "/.*/",
+          "limit": 100,
           "values": true
         },
         "sort": "desc",
@@ -224,12 +308,34 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "12.2.0-16979757807",
+      "pluginVersion": "12.1.1",
       "targets": [
         {
+          "dataset": "performance_schema",
           "datasource": "sshame-influxdb",
+          "editorMode": "code",
+          "format": "table",
           "query": "from(bucket: \"sshame\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"ssh_fail\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"event\")\r\n  |> group(columns: [\"user\"])\r\n  |> count()\r\n  |> sort(columns: [\"_value\"], desc: true)\r\n  |> limit(n: 10)\r\n  |> map(fn: (r) => ({ r with \" \": r._value }))\r\n  |> keep(columns: [\"user\", \" \"])\r\n",
-          "refId": "A"
+          "rawQuery": true,
+          "rawSql": "SELECT\r\n  username    AS metric,\r\n  COUNT(*) AS value\r\nFROM ssh_events\r\nWHERE $__timeFilter(ts)\r\n  AND username IS NOT NULL\r\n  AND username <> ''\r\nGROUP BY username\r\nORDER BY value DESC;\r\n",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
         }
       ],
       "title": "Username distribution",
@@ -237,8 +343,11 @@
       "type": "piechart"
     },
     {
-      "datasource": "sshame-influxdb",
-      "description": "This chart shows the distribution of the country from which a failed SSH attempt in the selected timeframe originated",
+      "datasource": {
+        "type": "mysql",
+        "uid": "P22A8A7D75DEA592C"
+      },
+      "description": "This chart shows the distribution of the used IPs from failed SSH attempts in the selected timeframe",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -256,12 +365,12 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
-        "w": 5,
-        "x": 10,
+        "h": 6,
+        "w": 6,
+        "x": 18,
         "y": 7
       },
-      "id": 5,
+      "id": 2,
       "options": {
         "displayLabels": [],
         "legend": {
@@ -278,6 +387,7 @@
             "lastNotNull"
           ],
           "fields": "/.*/",
+          "limit": 100,
           "values": true
         },
         "sort": "desc",
@@ -287,20 +397,45 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "12.2.0-16979757807",
+      "pluginVersion": "12.1.1",
       "targets": [
         {
+          "dataset": "performance_schema",
           "datasource": "sshame-influxdb",
-          "query": "from(bucket: \"sshame\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"ssh_fail\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"event\")\r\n  |> group(columns: [\"country\"])\r\n  |> filter(fn: (r) => r.country != \"Unknown\")\r\n  |> count()\r\n  |> sort(columns: [\"_value\"], desc: true)\r\n  |> limit(n: 10)\r\n  |> map(fn: (r) => ({ r with \" \": r._value }))\r\n  |> keep(columns: [\"country\", \" \"])\r\n",
-          "refId": "A"
+          "editorMode": "code",
+          "format": "table",
+          "query": "from(bucket: \"sshame\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"ssh_fail\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"event\")\r\n  |> group(columns: [\"ip\"])\r\n  |> count()\r\n  |> sort(columns: [\"_value\"], desc: true)\r\n  |> limit(n: 10)\r\n  |> map(fn: (r) => ({ r with \" \": r._value }))\r\n  |> keep(columns: [\"ip\", \" \"])\r\n",
+          "rawQuery": true,
+          "rawSql": "SELECT\r\n  ip    AS metric,\r\n  COUNT(*) AS value\r\nFROM ssh_events\r\nWHERE $__timeFilter(ts)\r\n  AND ip IS NOT NULL\r\n  AND ip <> ''\r\nGROUP BY ip\r\nORDER BY value DESC;\r\n",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
         }
       ],
-      "title": "Country distribution",
+      "title": "IP distribution",
       "transparent": true,
       "type": "piechart"
     },
     {
-      "datasource": "sshame-influxdb",
+      "datasource": {
+        "type": "mysql",
+        "uid": "P22A8A7D75DEA592C"
+      },
       "description": "This chart shows the distribution of the used ports from failed SSH attempts in the selected timeframe",
       "fieldConfig": {
         "defaults": {
@@ -319,10 +454,10 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
-        "w": 5,
-        "x": 16,
-        "y": 7
+        "h": 6,
+        "w": 6,
+        "x": 12,
+        "y": 13
       },
       "id": 4,
       "options": {
@@ -341,6 +476,7 @@
             "lastNotNull"
           ],
           "fields": "/.*/",
+          "limit": 100,
           "values": true
         },
         "sort": "desc",
@@ -350,15 +486,126 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "12.2.0-16979757807",
+      "pluginVersion": "12.1.1",
       "targets": [
         {
+          "dataset": "performance_schema",
           "datasource": "sshame-influxdb",
+          "editorMode": "code",
+          "format": "table",
           "query": "from(bucket: \"sshame\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"ssh_fail\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"event\")\r\n  |> group(columns: [\"port\"])\r\n  |> count()\r\n  |> sort(columns: [\"_value\"], desc: true)\r\n  |> limit(n: 10)\r\n  |> map(fn: (r) => ({ r with \" \": r._value }))\r\n  |> keep(columns: [\"port\", \" \"])\r\n",
-          "refId": "A"
+          "rawQuery": true,
+          "rawSql": "SELECT\r\n  port    AS metric,\r\n  COUNT(*) AS value\r\nFROM ssh_events\r\nWHERE $__timeFilter(ts)\r\n  AND port IS NOT NULL\r\n  AND port <> ''\r\nGROUP BY port\r\nORDER BY value DESC;\r\n",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
         }
       ],
       "title": "Port distribution",
+      "transparent": true,
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "mysql",
+        "uid": "P22A8A7D75DEA592C"
+      },
+      "description": "This chart shows the distribution of the country from which a failed SSH attempt in the selected timeframe originated",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 18,
+        "y": 13
+      },
+      "id": 5,
+      "options": {
+        "displayLabels": [],
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false,
+          "values": [
+            "percent"
+          ]
+        },
+        "pieType": "pie",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/.*/",
+          "limit": 100,
+          "values": true
+        },
+        "sort": "desc",
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.1.1",
+      "targets": [
+        {
+          "dataset": "performance_schema",
+          "datasource": "sshame-influxdb",
+          "editorMode": "code",
+          "format": "table",
+          "query": "from(bucket: \"sshame\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"ssh_fail\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"event\")\r\n  |> group(columns: [\"country\"])\r\n  |> filter(fn: (r) => r.country != \"Unknown\")\r\n  |> count()\r\n  |> sort(columns: [\"_value\"], desc: true)\r\n  |> limit(n: 10)\r\n  |> map(fn: (r) => ({ r with \" \": r._value }))\r\n  |> keep(columns: [\"country\", \" \"])\r\n",
+          "rawQuery": true,
+          "rawSql": "SELECT\r\n  country    AS metric,\r\n  COUNT(*) AS value\r\nFROM ssh_events\r\nWHERE $__timeFilter(ts)\r\n  AND country IS NOT NULL\r\n  AND country <> ''\r\nGROUP BY country\r\nORDER BY value DESC;\r\n",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Country distribution",
       "transparent": true,
       "type": "piechart"
     }
