@@ -1,16 +1,26 @@
 import os
-import time
 import json
-from datetime import datetime
 from parse import parse_log_lines 
-from influx import write_ssh_event 
+import logging
+from dotenv import load_dotenv
+
+load_dotenv()
+level_name = os.getenv("LOGGING_LEVEL", "INFO").upper()
+level = getattr(logging, level_name, logging.INFO) 
+
+logging.basicConfig(
+    level=level,
+    format="%(asctime)s %(levelname)s [%(name)s] %(message)s")
 
 
+LOG_PATH = "/hostlog/auth.log"      
+if not LOG_PATH:
+    raise ValueError("SSH_LOG environment variable not set")  
 
-LOG_PATH = "/hostlog/auth.log"            
-ROTATED_PATH = "/hostlog/auth.log.1"      
-STATE_FILE = "/state/state.json"                 
-INTERVAL = 3                             
+ROTATED_PATH = "/hostlog/auth.log.1"
+if not ROTATED_PATH:    
+    raise ValueError("SSH_LOG_ROLL environment variable not set")   
+STATE_FILE = "/state/state.json"                                             
 
 
 def load_state():
@@ -37,19 +47,11 @@ def read_new_lines(log_path, offset):
             new_offset = f.tell()
         return lines, new_offset
     except Exception as e:
-        print(f"Error reading log: {e}")
+        logging.error(f"Error reading log: {e}")
         return [], offset
 
-def process_lines(lines):
-    print(f"[DEBUG] Processing {len(lines)} lines...")
-    events = parse_log_lines(lines)
-    print(f"[DEBUG] Parsed {len(events)} events.")
-    for event in events:
-        # event = (ip, user, timestamp_str, port)
-        write_ssh_event(*event)
-
 def run_watcher():
-    print("[DEBUG] Starting sshame watcher...")
+    logging.info("Starting sshame watcher...")
     state = load_state()
 
     while True:
@@ -58,21 +60,20 @@ def run_watcher():
         # Fall 1: Gleiches Logfile → lese ab letzter Position
         if state["inode"] == current_inode:
             lines, new_offset = read_new_lines(LOG_PATH, state["offset"])
-            process_lines(lines)
+            parse_log_lines(lines)
             state["offset"] = new_offset
 
         # Fall 2: Log wurde rotiert → lese log.1 vollständig + log neu ab 0
         else:
-            print("[DEBUG] Log rotation detected – scanning auth.log.1")
+            logging.info("Log rotation detected – scanning auth.log.1")
             old_lines, _ = read_new_lines(ROTATED_PATH, 0)
-            process_lines(old_lines)
+            parse_log_lines(old_lines)
             new_lines, new_offset = read_new_lines(LOG_PATH, 0)
-            process_lines(new_lines)
+            parse_log_lines(new_lines)
             state["inode"] = current_inode
             state["offset"] = new_offset
 
         save_state(state)
-        time.sleep(INTERVAL)
 
 if __name__ == "__main__":
     run_watcher()

@@ -2,25 +2,33 @@ import os
 import mysql.connector
 from dotenv import load_dotenv
 import time
+import logging
+
 load_dotenv()
+level_name = os.getenv("LOGGING_LEVEL", "INFO").upper()
+level = getattr(logging, level_name, logging.INFO) 
+
+logging.basicConfig(
+    level=level,
+    format="%(asctime)s %(levelname)s [%(name)s] %(message)s")
 
 MYSQL_CONFIG = {
     'host': 'mysql', 
     'user': os.getenv("MYSQL_USER"),
     'password': os.getenv("MYSQL_PASSWORD"),
-    'database': 'geoip',
+    'database': "sshame",
 }
 
 DEFAULT_GEO = {
-    "country_long": "Unknown",
+    "country_long": None,
     "lat": None,
     "lon": None
 }
 
 def get_geo_info(ip_str, retries=10, delay=10):
-    print(f"[DEBUG] Raw IP from log: '{ip_str}'")
+    logging.debug(f"Raw IP from log: '{ip_str}'")
     ip_int = ip_to_int(ip_str)
-    print(f"[DEBUG] Converted to int: {ip_int}")
+    logging.debug(f"-> Converted to int: {ip_int}")
 
     for attempt in range(retries):
         try:
@@ -44,10 +52,10 @@ def get_geo_info(ip_str, retries=10, delay=10):
                 return DEFAULT_GEO.copy()
 
         except mysql.connector.Error as e:
-            print(f"[WARNING] Attempt {attempt + 1} failed: {e}")
+            logging.warning(f"Attempt {attempt + 1} failed: {e}")
             time.sleep(delay)
 
-    print("[ERROR] All connection attempts failed.")
+    logging.error("All connection attempts failed.")
     return DEFAULT_GEO.copy()
 
 
