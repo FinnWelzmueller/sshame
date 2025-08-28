@@ -20,7 +20,7 @@ logging.basicConfig(
     format="%(asctime)s %(levelname)s [%(name)s] %(message)s")
 
 
-def parse_log(line):
+def parse_log(line: str):
     """
     Parses the auth.log file and extracts information about failed SSH login attempts. 
     :return: ip, timestamp, user and port as strings
@@ -60,7 +60,7 @@ def parse_log(line):
         lon = None
     logging.debug(f"ip: {ip}, user: {user}, time: {timestamp_str}, port: {port}, country: {country_long}, lat: {lat}, lon: {lon}")
     return ip, user, timestamp_str, port, country_long, lat, lon
-def parse_log_lines(lines):
+def parse_log_lines(lines: list[str]):
     """
     loads information from an array of strings and appends it to results
     :param lines: array of strings that will be analyzed

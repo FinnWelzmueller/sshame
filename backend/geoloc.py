@@ -25,7 +25,7 @@ DEFAULT_GEO = {
     "lon": None
 }
 
-def get_geo_info(ip_str, retries=10, delay=10):
+def get_geo_info(ip_str: str, retries=10, delay=10):
     logging.debug(f"Raw IP from log: '{ip_str}'")
     ip_int = ip_to_int(ip_str)
     logging.debug(f"-> Converted to int: {ip_int}")
@@ -59,6 +59,6 @@ def get_geo_info(ip_str, retries=10, delay=10):
     return DEFAULT_GEO.copy()
 
 
-def ip_to_int(ip_str):
+def ip_to_int(ip_str: str)  -> int:
     parts = [int(part) for part in ip_str.split('.')]
     return (parts[0] << 24) + (parts[1] << 16) + (parts[2] << 8) + parts[3]

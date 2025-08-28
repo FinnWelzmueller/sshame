@@ -31,26 +31,26 @@ def load_state():
         return json.load(f)
 
 
-def save_state(state):
+def save_state(state: str):
     with open(STATE_FILE, "w") as f:
         json.dump(state, f)
 
 
-def get_inode(path):
+def get_inode(path: str):
     try:
         return os.stat(path).st_ino
     except FileNotFoundError:
         return None
 
 
-def get_size(path):
+def get_size(path: str):
     try:
         return os.path.getsize(path)
     except FileNotFoundError:
         return 0
 
 
-def read_new_lines(log_path, offset):
+def read_new_lines(log_path: str, offset: int):
     try:
         with open(log_path, "r") as f:
             f.seek(offset)
