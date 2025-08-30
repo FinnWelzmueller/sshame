@@ -9,6 +9,8 @@ import logging
 import os
 import re
 from dotenv import load_dotenv
+import ipaddress
+
 
 load_dotenv()
 
@@ -19,17 +21,26 @@ logging.basicConfig(
     level=level,
     format="%(asctime)s %(levelname)s [%(name)s] %(message)s")
 
-
+def _is_valid_ipv4(ip: str) -> bool:
+    try:
+        ipaddress.IPv4Address(ip)
+        return True
+    except ValueError:
+        return False
+    
 def parse_log(line: str):
     """
     Parses the auth.log file and extracts information about failed SSH login attempts. 
+
+    :param line: a single line from the auth.log file with an failed attempt
     :return: ip, timestamp, user and port as strings
     """
     RE_TS   = re.compile(r'^(?P<ts>\d{4}-\d{2}-\d{2}T[^\s]+)')
     RE_USER = re.compile(r'Failed password for (?:invalid user |unknown user )?(?P<user>\S+)')
-    RE_IP   = re.compile(r'\bfrom\s+(?P<ip>(?:\d{1,3}\.){3}\d{1,3}|[0-9A-Fa-f:]+)\b')
+    RE_IP = re.compile(r'\bfrom\s+(?P<ip>(?:\d{1,3}\.){3}\d{1,3})\b')
     RE_PORT = re.compile(r'\bport\s+(?P<port>\d+)\b')
 
+    # Timestamp
     m = RE_TS.search(line)
     timestamp_str = m.group('ts') if m else None
 
@@ -45,8 +56,8 @@ def parse_log(line: str):
     m = RE_PORT.search(line)
     port = m.group('port') if m else None
 
-    if not ip:
-        logging.debug(f"IP nicht gefunden in Zeile: {line.strip()}")
+    if not ip or not _is_valid_ipv4(ip):
+        logging.debug(f"No IP found in line: {line.strip()}")
         return None, None, None, None, None, None, None
 
     geo = get_geo_info(ip)
@@ -55,11 +66,15 @@ def parse_log(line: str):
         lat = geo.get("lat")
         lon = geo.get("lon")
     except KeyError:
+        logging.debug(f"No geo information found for IP {ip}")
         country_long = None
         lat = None
         lon = None
+
     logging.debug(f"ip: {ip}, user: {user}, time: {timestamp_str}, port: {port}, country: {country_long}, lat: {lat}, lon: {lon}")
     return ip, user, timestamp_str, port, country_long, lat, lon
+
+
 def parse_log_lines(lines: list[str]):
     """
     loads information from an array of strings and appends it to results
@@ -67,7 +82,9 @@ def parse_log_lines(lines: list[str]):
     :return: array of tuples containing the time, ip, user and
     """
     for line in lines:
-        if "Failed password" in line and not "message repeated" in line:
+        if "Failed password" in line and "message repeated" not in line:
             ip, user, timestamp_str, port, country_long, lat, lon = parse_log(line)
+            if not ip:
+                continue  # no valid IP -> skip
             write_ssh_event(ip, user, timestamp_str, port, country_long, lat, lon)
 
