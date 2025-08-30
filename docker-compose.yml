@@ -14,7 +14,9 @@ services:
     depends_on:
       mysql:
         condition: service_healthy
-
+    networks:
+      - sshame
+      
   backend:
     build: ./backend
     container_name: sshame-backend
@@ -27,7 +29,8 @@ services:
     depends_on:
       mysql:
         condition: service_healthy
-
+    networks:
+      - sshame
 
   mysql:
     image: mysql:8.0
@@ -49,3 +52,11 @@ services:
       - ./backend/mysql/init:/docker-entrypoint-initdb.d
       - ./backend/mysql/init:/var/lib/mysql-files
     command: --secure-file-priv=/var/lib/mysql-files/ --local-infile=1 --sql-mode=""
+    networks:
+      - sshame
+
+networks:
+  sshame:
+    driver: bridge
+
+# in case you use Nginx Proxy Manager, the NPM network should be added here.
