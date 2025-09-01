@@ -66,6 +66,7 @@
             }
           },
           "mappings": [],
+          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -105,7 +106,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT\r\n  ts AS time,\r\n  COUNT(*) AS value\r\nFROM ssh_events\r\nWHERE $__timeFilter(ts)\r\nGROUP BY ts\r\nORDER BY ts ASC;",
+          "rawSql": "SELECT\r\n  $__timeGroup(ts, '1m') AS time,\r\n  COUNT(*) AS value\r\nFROM ssh_events\r\nWHERE $__timeFilter(ts)\r\nGROUP BY 1\r\nORDER BY 1;",
           "refId": "A",
           "sql": {
             "columns": [
@@ -478,7 +479,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT\r\n  port AS metric,\r\n  COUNT(*) AS value\r\nFROM ssh_events\r\nWHERE $__timeFilter(ts)\r\nGROUP BY port\r\nORDER BY value DESC\r\nLIMIT 100;",
+          "rawSql": "SELECT\r\n  port AS port,\r\n  COUNT(*) AS value\r\nFROM ssh_events\r\nWHERE $__timeFilter(ts)\r\nGROUP BY port\r\nORDER BY value DESC\r\nLIMIT 100;",
           "refId": "A",
           "sql": {
             "columns": [
