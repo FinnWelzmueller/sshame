@@ -248,7 +248,7 @@
         "type": "mysql",
         "uid": "ds-sshame-mysql"
       },
-      "description": "This chart shows the distribution of the used user names from failed SSH attempts in the selected timeframe",
+      "description": "This chart shows the distribution of the used IPs from failed SSH attempts in the selected timeframe",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -271,7 +271,7 @@
         "x": 12,
         "y": 7
       },
-      "id": 3,
+      "id": 7,
       "options": {
         "displayLabels": [],
         "legend": {
@@ -326,7 +326,7 @@
           }
         }
       ],
-      "title": "Username distribution",
+      "title": "IP distribution",
       "transparent": true,
       "type": "piechart"
     },
@@ -566,7 +566,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT\r\n  country AS metric,\r\n  COUNT(*) AS value\r\nFROM ssh_events\r\nWHERE country IS NOT NULL\r\n  AND country <> ''\r\nGROUP BY country\r\nORDER BY value DESC\r\nLIMIT 100;\r\n",
+          "rawSql": "SELECT\r\n  country AS metric,\r\n  COUNT(*) AS value\r\nFROM ssh_events\r\nWHERE $__timeFilter(ts)\r\nAND country IS NOT NULL\r\nAND country <> ''\r\nGROUP BY country\r\nORDER BY value DESC\r\nLIMIT 100;",
           "refId": "A",
           "sql": {
             "columns": [
@@ -606,5 +606,5 @@
   "timezone": "browser",
   "title": "sshame-dashboard",
   "uid": "ber13wg4rxqm8b",
-  "version": 1
+  "version": 3
 }
