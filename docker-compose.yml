@@ -49,11 +49,15 @@ services:
       retries: 30
       start_period: 40s
     volumes:
+      - mysql-data:/var/lib/mysql
       - ./backend/mysql/init:/docker-entrypoint-initdb.d
       - ./backend/mysql/init:/var/lib/mysql-files
     command: --secure-file-priv=/var/lib/mysql-files/ --local-infile=1 --sql-mode=""
     networks:
       - sshame
+
+volumes:
+  mysql-data:
 
 networks:
   sshame:
