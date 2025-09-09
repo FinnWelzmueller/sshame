@@ -248,7 +248,7 @@
         "type": "mysql",
         "uid": "ds-sshame-mysql"
       },
-      "description": "This chart shows the distribution of the used IPs from failed SSH attempts in the selected timeframe",
+      "description": "This chart shows the distribution of the usernames from failed SSH attempts in the selected timeframe",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -326,7 +326,7 @@
           }
         }
       ],
-      "title": "IP distribution",
+      "title": "Username distribution",
       "transparent": true,
       "type": "piechart"
     },
@@ -606,5 +606,5 @@
   "timezone": "browser",
   "title": "sshame-dashboard",
   "uid": "ber13wg4rxqm8b",
-  "version": 3
+  "version": 1
 }
