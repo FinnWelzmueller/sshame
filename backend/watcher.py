@@ -49,25 +49,34 @@ def read_lines(path:str) -> list[str]:
 
 def read_new_lines() -> list[str]:
     last_row = load_state()
-    lines = read_lines(LOG_PATH)
-    out = lines[last_row:]
-    if len(lines) < last_row:   # Check for log rotation
-        logging.info("Log file rotation detected. Reading old file first.")
-        old_lines = read_lines(ROTATED_PATH)
-        out = old_lines[last_row:] + lines
-    save_state(len(lines))
-    return out
+    lines = read_lines(LOG_PATH) or []
+    curr_len = len(lines)
 
+    if curr_len >= last_row:
+        return lines[last_row:]
 
+    logging.info("Log rotation detected.")
+    rotated = read_lines(ROTATED_PATH) or []
+    rot_len = len(rotated)
 
+    start = last_row if last_row <= rot_len else rot_len
+    tail = rotated[start:]
+
+    return tail + lines
 
 def run_watcher():
     logging.info("Starting sshame watcher...")
-
     while True:
         new_lines = read_new_lines()
         logging.info(f"Found {len(new_lines)} new lines.")
-        parse_log_lines(new_lines)
+        if new_lines:
+            try:
+                parse_log_lines(new_lines)
+            except Exception as e:
+                logging.exception("parse_log_lines failed")
+            else:
+                current_lines = read_lines(LOG_PATH) or []
+                save_state(len(current_lines))
         time.sleep(10)
 
 
